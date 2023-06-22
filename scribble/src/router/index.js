@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { user } from '../stores/authStore'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -10,7 +11,14 @@ const router = createRouter({
     },
     {
       path: '/create',
-      component: () => import('../views/CreateView.vue')
+      component: () => import('../views/CreateView.vue'),
+      beforeEnter: () => {
+        if (!user.value) {
+          return '/not-found'
+        } else {
+          return true
+        }
+      }
     },
     {
       path: '/post/:id',
