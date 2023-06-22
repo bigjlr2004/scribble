@@ -8,6 +8,8 @@ import { Timestamp, addDoc } from 'firebase/firestore'
 import { postsCollection } from '../firebase'
 import { useRouter } from 'vue-router'
 
+import { user, username } from '../stores/authStore'
+
 const form = ref({
   title: '',
   subtitle: '',
@@ -16,9 +18,9 @@ const form = ref({
   tags: [],
   publishDate: null,
   readTime: 0,
-  authorId: 'some_author_id', // TODO
-  authorAvatar: 'https://robohash.org/undequamanimi.png?size=50x50&set=set1', // TODO
-  authorName: 'Luke Skywalker' // TODO
+  authorId: user.value.uid,
+  authorAvatar: user.value.photoURL,
+  authorName: username.value
 })
 
 const router = useRouter()

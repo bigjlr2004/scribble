@@ -14,7 +14,6 @@ onMounted(async () => {
   }))
 
   allPosts.value = data
-  console.log(data)
 })
 </script>
 
