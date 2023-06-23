@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue'
-import InputText from 'primevue/inputText'
+import InputText from 'primevue/inputtext'
 import Chips from 'primevue/Chips'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import { Timestamp, addDoc } from 'firebase/firestore'
-import { postsCollection } from '../firebase'
+import { postsCollection, storage } from '../firebase'
+import FileUpload from 'primevue/fileupload'
+import { ref as getStorageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { useRouter } from 'vue-router'
 
 import { user, username } from '../stores/authStore'
@@ -26,6 +28,18 @@ const form = ref({
 const router = useRouter()
 
 const onSubmit = async () => {
+  if (image.value) {
+    const originalFilename = image.value.name
+    const fileExtension = originalFilename.split('.').pop()
+    const newFileName = `${Date.now()}.${fileExtension}`
+    //This is a reference to where in Firebase this particular file will be stored
+    const imageRef = getStorageRef(storage, newFileName)
+    await uploadBytes(imageRef, image.value)
+    const newImageUrl = await getDownloadURL(imageRef)
+
+    form.value.imageUrl = newImageUrl
+  }
+
   form.value.publishDate = Timestamp.now()
 
   const totalWords = form.value.content.split(' ').length
@@ -36,6 +50,10 @@ const onSubmit = async () => {
 
   router.push(`/post/${response.id}`)
 }
+const image = ref(null)
+const onFileSelect = (event) => {
+  image.value = event.files[0]
+}
 </script>
 
 <template>
@@ -45,6 +63,15 @@ const onSubmit = async () => {
         <InputText v-model="form.title" placeholder="Title" class="mb-2" />
         <InputText v-model="form.subtitle" placeholder="Subtitle" class="mb-2" />
         <Chips v-model="form.tags" placeholder="Tags" class="mb-2" />
+        <FileUpload
+          custom-upload
+          accept="image/*"
+          :max-file-size="1_000_000"
+          choose-label="Choose Image"
+          mode="basic"
+          class="mb-2"
+          @select="onFileSelect"
+        />
         <Textarea v-model="form.content" auto-resize rows="30" class="mb-2" />
       </div>
 
